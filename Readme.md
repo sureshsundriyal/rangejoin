@@ -1,8 +1,7 @@
 # RangeJoin — C++ Range-Based String Join Utility
 
 This header-only utility provides a set of `join` functions for concatenating
-elements of ranges into a single `std::string`. It supports multiple ranges and
-transformation functions C++20 features like concepts and ranges.
+elements of ranges into a single `std::string`.
 
 ## Features
 

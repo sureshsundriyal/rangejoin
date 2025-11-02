@@ -76,6 +76,7 @@ namespace rangejoin {
         } else if (!first.empty()) {
             return first;
         }
+
         return rest;
     }
 

@@ -64,4 +64,4 @@ int main() {
 
 ## License
 
-Creative Commons Zero v1.0 Universal
+Creative Commons Zero v1.0 Universal. See [LICENSE](LICENSE) for details.

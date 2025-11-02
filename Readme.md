@@ -46,6 +46,8 @@ std::string result = rangejoin::join("-", [](int n) { return std::to_string(n); 
 #include <string>
 #include <iostream>
 
+#include "rangejoin.hpp"
+
 int main() {
     std::vector<std::string> names = {"Alice", "Bob", "Charlie"};
     std::cout << rangejoin::join(", ", names) << std::endl;

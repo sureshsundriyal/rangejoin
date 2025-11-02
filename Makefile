@@ -1,10 +1,10 @@
 all: rangejoin test
 
-rangejoin: rangejoin.cpp rangejoin.hpp
-	c++ --std=c++20 -I$(shell brew --prefix boost)/include rangejoin.cpp -o rangejoin
+rangejoin: test/test.cpp src/rangejoin.hpp
+	c++ --std=c++20 -I$(shell brew --prefix boost)/include -Isrc test/test.cpp -o test/test
 
 test: rangejoin
-	./rangejoin
+	./test/test
 
 clean:
-	rm -f rangejoin
+	rm -f test/test

@@ -36,7 +36,9 @@ std::string result = rangejoin::join(" | ", list1, set1); // "foo | bar | baz | 
 
 ```cpp
 std::vector<int> nums = {1, 2, 3};
-std::string result = rangejoin::join("-", [](int n) { return std::to_string(n); }, nums); // "1-2-3"
+std::string result = rangejoin::join("-",
+                                     [](int n) { return std::to_string(n); },
+                                     nums); // "1-2-3"
 ```
 
 ## Example
@@ -53,7 +55,11 @@ int main() {
     std::cout << rangejoin::join(", ", names) << std::endl;
 
     std::vector<int> scores = {85, 90, 95};
-    std::cout << rangejoin::join(" - ", [](int score) { return std::to_string(score); }, scores) << std::endl;
+    std::cout << rangejoin::join(" - ",
+                                 [](int score) {
+                                    return std::to_string(score);
+                                 },
+                                 scores) << std::endl;
 }
 ```
 

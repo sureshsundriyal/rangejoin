@@ -19,6 +19,7 @@ namespace rangejoin {
     inline std::string
     join(const std::string&, const T&) = delete;
 
+
     /**
      * @brief Joins elements of a single range into a string using the specified
      * separator.

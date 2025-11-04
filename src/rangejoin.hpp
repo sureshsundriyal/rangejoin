@@ -9,6 +9,7 @@
 #include <ranges>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <vector>
 
@@ -17,7 +18,7 @@ namespace rangejoin {
     // Delete the function for all other types.
     template <typename T>
     inline std::string
-    join(const std::string&, const T&) = delete;
+    join(std::string_view, const T&) = delete;
 
 
     /**
@@ -32,7 +33,7 @@ namespace rangejoin {
     template <std::ranges::range Range>
     requires std::convertible_to<std::ranges::range_value_t<Range>, std::string>
     inline std::string
-    join(const std::string& separator, const Range& range)
+    join(std::string_view separator, const Range &range)
     {
         std::ostringstream oss;
         auto it = std::begin(range);
@@ -71,7 +72,7 @@ namespace rangejoin {
             (std::convertible_to<std::ranges::range_value_t<Range>,
                 std::string>)
     inline std::string
-    join(const std::string &separator, const Range &range,
+    join(std::string_view separator, const Range &range,
         const Ranges &...ranges)
     {
         const auto first = join(separator, range);
@@ -79,7 +80,7 @@ namespace rangejoin {
 
         // Combine non-empty results with separator
         if (!first.empty() && !rest.empty()) {
-            return first + separator + rest;
+            return first + std::string(separator) + rest;
         } else if (!first.empty()) {
             return first;
         }
@@ -95,7 +96,7 @@ namespace rangejoin {
      * @tparam Transform A callable that transforms each element into a
      *         std::string.
      * @tparam Ranges Variadic range types.
-     * @param delimiter The string to insert between transformed elements.
+     * @param separator The string to insert between transformed elements.
      * @param transform A function or lambda to apply to each element.
      * @param ranges Input ranges to transform and join.
      * @return A single string with transformed elements joined by the
@@ -108,7 +109,7 @@ namespace rangejoin {
                                         std::ranges::range_value_t<Ranges>>,
                 std::string> && ...)
     inline std::string
-    join(const std::string &delimiter, Transform transform,
+    join(std::string_view separator, Transform transform,
         const Ranges &...ranges)
     {
         std::vector<std::string> flattened;
@@ -123,7 +124,7 @@ namespace rangejoin {
         (append_transformed(ranges), ...);
 
         // Join the transformed strings
-        return join(delimiter, flattened);
+        return join(separator, flattened);
     }
 
 } // namespace rangejoin

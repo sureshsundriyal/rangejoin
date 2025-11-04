@@ -17,7 +17,7 @@ namespace rangejoin {
     // Delete the function for all other types.
     template <typename T>
     inline std::string
-    join(const std::string& separator, const T& range) = delete;
+    join(const std::string&, const T&) = delete;
 
     /**
      * @brief Joins elements of a single range into a string using the specified

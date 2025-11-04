@@ -2,8 +2,9 @@
 // License: CC0 - No rights reserved.
 
 #include "rangejoin.hpp"
-#include <iostream>
+#include <cassert>
 #include <deque>
+#include <iostream>
 #include <list>
 #include <set>
 #include <string>

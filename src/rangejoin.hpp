@@ -3,13 +3,14 @@
 
 #pragma once
 
-#include <cassert>
+#include <algorithm>
 #include <concepts>
 #include <iterator>
 #include <ranges>
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 namespace rangejoin {
 

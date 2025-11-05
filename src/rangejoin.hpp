@@ -25,9 +25,9 @@ namespace rangejoin {
      */
     template <std::ranges::range First, std::ranges::range... Rest>
     requires(std::convertible_to<std::ranges::range_value_t<Rest>,
-                std::string> && ...) &&
+                std::string_view> && ...) &&
             (std::convertible_to<std::ranges::range_value_t<First>,
-                std::string>)
+                std::string_view>)
     inline std::string
     join(std::string_view separator, const First &first,
          const Rest &...rest)
@@ -43,7 +43,7 @@ namespace rangejoin {
             }
         };
 
-        (append_range(first));
+        append_range(first);
         (append_range(rest), ...);
         return oss.str();
     }
@@ -70,10 +70,10 @@ namespace rangejoin {
            ...) &&
           std::convertible_to<std::invoke_result_t<
                                   Transform, std::ranges::range_value_t<First>>,
-                              std::string> &&
+                              std::string_view> &&
           (std::convertible_to<std::invoke_result_t<
                                    Transform, std::ranges::range_value_t<Rest>>,
-                               std::string> &&
+                               std::string_view> &&
            ...))
     inline std::string join(std::string_view separator, Transform transform,
                             const First &first, const Rest &...rest) {

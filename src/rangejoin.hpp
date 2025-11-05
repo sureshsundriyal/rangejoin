@@ -19,11 +19,9 @@ inline constexpr bool is_joinable_element
     = std::is_same_v<T, char> || std::is_same_v<T, const char*>
     || std::convertible_to<T, std::string_view>;
 
-
 template<typename T>
 inline constexpr bool is_not_char_variant
     = !std::is_same_v<T, char> && !std::is_same_v<T, const char*>;
-
 
 // Helper to append elements to stream
 inline void
@@ -45,7 +43,6 @@ append_element(std::ostringstream& oss, const T& value)
 {
     oss << std::string_view{value};
 }
-
 
 /**
  * @brief Joins elements from multiple ranges into a single string using the
@@ -80,7 +77,6 @@ join(std::string_view separator, const First& first, const Rest&... rest)
     (append_range(rest), ...);
     return oss.str();
 }
-
 
 /**
  * @brief Joins elements from multiple ranges into a string after applying a

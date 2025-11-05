@@ -53,8 +53,9 @@ namespace rangejoin {
     * @brief Joins elements from multiple ranges into a string after applying a
     * transformation.
     *
-    * @tparam Transform A callable that transforms each element into a std::string.
-    * @tparam First The first range type (required).
+    * @tparam Transform A callable that transforms each element into a
+    *         std::string.
+    * @tparam First The first range type.
     * @tparam Rest Variadic additional range types.
     * @param separator The string to insert between transformed elements.
     * @param transform A function or lambda to apply to each element.

@@ -12,6 +12,34 @@
 
 namespace rangejoin {
 
+    // trait to determine if a type is joinable (either char or convertible to
+    // string_view)
+    template <typename T>
+    inline constexpr bool is_joinable_element =
+        std::is_same_v<T, char> || std::is_same_v<T, const char *> ||
+        std::convertible_to<T, std::string_view>;
+
+    template <typename T>
+    inline constexpr bool is_string_like =
+        !std::is_same_v<T, char> && !std::is_same_v<T, const char *>;
+
+    // Helper to append elements to stream
+    inline void append_element(std::ostringstream &oss, const char c) {
+        oss << c;
+    }
+
+    inline void append_element(std::ostringstream &oss, const char *s) {
+        oss << std::string_view{s};
+    }
+
+
+    template <typename T>
+    requires (is_string_like<T>)
+    inline void append_element(std::ostringstream& oss, const T& value) {
+        oss << std::string_view{value};
+    }
+
+
     /**
      * @brief Joins elements from multiple ranges into a single string using the
      * specified separator.
@@ -24,14 +52,10 @@ namespace rangejoin {
      * @return A single string with all elements joined by the separator.
      */
     template <std::ranges::range First, std::ranges::range... Rest>
-    requires(std::convertible_to<std::ranges::range_value_t<Rest>,
-                std::string_view> && ...) &&
-            (std::convertible_to<std::ranges::range_value_t<First>,
-                std::string_view>)
-    inline std::string
-    join(std::string_view separator, const First &first,
-         const Rest &...rest)
-    {
+    requires (is_joinable_element<std::ranges::range_value_t<First>> &&
+              (is_joinable_element<std::ranges::range_value_t<Rest>> && ...))
+    inline std::string join(std::string_view separator, const First& first,
+                            const Rest&... rest) {
         std::ostringstream oss;
         bool first_elem = true;
 
@@ -39,7 +63,7 @@ namespace rangejoin {
             for (const auto& elem : range) {
                 if (!first_elem) oss << separator;
                 first_elem = false;
-                oss << std::string_view{elem};
+                append_element(oss, elem);
             }
         };
 
@@ -65,17 +89,14 @@ namespace rangejoin {
     */
     template <typename Transform, std::ranges::range First,
               std::ranges::range... Rest>
-      requires(
-          std::invocable<Transform, std::ranges::range_value_t<First>> &&
-          (std::invocable<Transform, std::ranges::range_value_t<Rest>> &&
-           ...) &&
-          std::convertible_to<std::invoke_result_t<
-                                  Transform, std::ranges::range_value_t<First>>,
-                              std::string_view> &&
-          (std::convertible_to<std::invoke_result_t<
-                                   Transform, std::ranges::range_value_t<Rest>>,
-                               std::string_view> &&
-           ...))
+      requires(std::invocable<Transform, std::ranges::range_value_t<First>> &&
+               (std::invocable<Transform, std::ranges::range_value_t<Rest>> &&
+                ...) &&
+               is_joinable_element<std::invoke_result_t<
+                   Transform, std::ranges::range_value_t<First>>> &&
+               (is_joinable_element<std::invoke_result_t<
+                    Transform, std::ranges::range_value_t<Rest>>> &&
+                ...))
     inline std::string join(std::string_view separator, Transform transform,
                             const First &first, const Rest &...rest) {
       std::ostringstream oss;
@@ -86,13 +107,12 @@ namespace rangejoin {
           if (!first_elem)
             oss << separator;
           first_elem = false;
-          oss << std::string_view{transform(elem)};
+          append_element(oss, transform(elem));
         }
       };
 
       append_transformed(first);
       (append_transformed(rest), ...);
-
       return oss.str();
     }
 

@@ -81,10 +81,60 @@ void test_transform_join_all_containers() {
     assert(join(":", to_string, empty_lst, empty_set) == "");
 }
 
+void test_single_element() {
+    std::vector<std::string> a = {"hello"};
+    assert(join(", ", a) == "hello");
+}
+
+void test_const_char_ptrs() {
+    std::vector<const char*> a = {"foo", "bar"};
+    assert(join("-", a) == "foo-bar");
+}
+
+void test_empty_transform() {
+    std::vector<std::string> a = {"a", "b"};
+    auto transform = [](const std::string&) { return ""; };
+    assert(join(",", transform, a) == ",");
+}
+
+void test_transform_side_effects() {
+    std::vector<std::string> a = {"x", "y"};
+    int counter = 0;
+    auto transform = [&](const std::string& s) {
+        return std::to_string(counter++) + s;
+    };
+    assert(join("-", transform, a) == "0x-1y");
+}
+
+void test_mixed_range_transform() {
+    std::vector<std::string> a = {"a"};
+    std::list<std::string> b = {"b", "c"};
+    auto transform = [](const std::string& s) { return s + "!"; };
+    assert(rangejoin::join(" ", transform, a, b) == "a! b! c!");
+}
+
+void test_char_range() {
+    std::vector<char> a = {'a', 'b', 'c'};
+    assert(rangejoin::join(",", a) == "a,b,c");
+}
+
+void test_join_with_char_ptr_range() {
+    std::vector<const char*> words = {"hello", "world"};
+    std::string result = join(" ", words);
+    assert(result == "hello world");
+}
+
 int main() {
     test_single_range_join_all_containers();
     test_multiple_range_join_all_combinations();
     test_transform_join_all_containers();
+    test_single_element();
+    test_const_char_ptrs();
+    test_empty_transform();
+    test_transform_side_effects();
+    test_mixed_range_transform();
+    test_char_range();
+    test_join_with_char_ptr_range();
     std::cout << "✅ All join tests passed successfully!\n";
     return 0;
 }

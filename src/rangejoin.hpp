@@ -12,8 +12,10 @@
 
 namespace rangejoin {
 
-// trait to determine if a type is joinable (either char or convertible to
-// string_view)
+/**
+ * Trait to determine if a type is joinable (either char or convertible to
+ * string_view
+ */
 template<typename T>
 inline constexpr bool is_joinable_element
     = std::is_same_v<T, char> || std::is_same_v<T, const char*>

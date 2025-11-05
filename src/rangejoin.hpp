@@ -3,15 +3,15 @@
 
 #pragma once
 
-#include <algorithm>
+//#include <algorithm>
 #include <concepts>
-#include <iterator>
+//#include <iterator>
 #include <ranges>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <type_traits>
-#include <vector>
+//#include <vector>
 
 namespace rangejoin {
 
@@ -36,19 +36,12 @@ namespace rangejoin {
     join(std::string_view separator, const Range &range)
     {
         std::ostringstream oss;
-        auto it = std::begin(range);
-        auto end = std::end(range);
+        bool first = true;
 
-        // Add the first element without a separator
-        if (it != end) {
-            oss << *it;
-            ++it;
-        }
-
-        // Add remaining elements with separator
-        while (it != end) {
-            oss << separator << *it;
-            ++it;
+        for (const auto& elem : range) {
+            if (!first) oss << separator;
+            first = false;
+            oss << std::string_view{elem};
         }
 
         return oss.str();
@@ -75,17 +68,20 @@ namespace rangejoin {
     join(std::string_view separator, const Range &range,
         const Ranges &...ranges)
     {
-        const auto first = join(separator, range);
-        const auto rest = join(separator, ranges...);
+        std::ostringstream oss;
+        bool first = true;
 
-        // Combine non-empty results with separator
-        if (!first.empty() && !rest.empty()) {
-            return first + std::string(separator) + rest;
-        } else if (!first.empty()) {
-            return first;
-        }
+        auto append_range = [&](const auto& range) {
+            for (const auto& elem : range) {
+                if (!first) oss << separator;
+                first = false;
+                oss << std::string_view{elem};
+            }
+        };
 
-        return rest;
+        append_range(range);
+        (append_range(ranges), ...);
+        return oss.str();
     }
 
 
@@ -112,19 +108,19 @@ namespace rangejoin {
     join(std::string_view separator, Transform transform,
         const Ranges &...ranges)
     {
-        std::vector<std::string> flattened;
+        std::ostringstream oss;
+        bool first = true;
 
-        // Apply transformation to each range and collect results
-        auto append_transformed = [&](const auto &range) {
-            std::transform(std::begin(range), std::end(range),
-                            std::back_inserter(flattened), transform);
+        auto append_transformed = [&](const auto& range) {
+            for (const auto& elem : range) {
+                if (!first) oss << separator;
+                first = false;
+                oss << std::string_view{transform(elem)};
+            }
         };
 
-        // Fold expression to apply transformation across all ranges
         (append_transformed(ranges), ...);
-
-        // Join the transformed strings
-        return join(separator, flattened);
+        return oss.str();
     }
 
 } // namespace rangejoin

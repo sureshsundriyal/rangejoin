@@ -76,7 +76,7 @@ join(std::string_view separator, const First& first, const Rest&... rest)
     };
 
     append_range(first);
-    (append_range(rest), ...);
+    ( ... , append_range(rest) );
     return oss.str();
 }
 
@@ -125,7 +125,7 @@ join(std::string_view separator,
     };
 
     append_transformed(first);
-    (append_transformed(rest), ...);
+    ( ... , append_transformed(rest) );
     return oss.str();
 }
 

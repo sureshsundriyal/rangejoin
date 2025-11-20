@@ -17,9 +17,10 @@ namespace rangejoin {
  * string_view
  */
 template<typename T>
-inline constexpr bool is_joinable_element
-    = std::is_same_v<T, char> || std::is_same_v<T, const char*>
-    || std::convertible_to<T, std::string_view>;
+inline constexpr bool is_joinable_element =
+    std::is_same_v<std::remove_cvref_t<T>, char> ||
+    std::is_same_v<std::remove_cvref_t<T>, const char*> ||
+    std::convertible_to<std::remove_cvref_t<T>, std::string_view>;
 
 template<typename T>
 inline constexpr bool is_not_char_variant
@@ -46,6 +47,52 @@ append_element(std::ostringstream& oss, const T& value)
     oss << std::string_view{value};
 }
 
+// Identity transformation
+struct identity {
+    template<typename T>
+    requires is_joinable_element<T>
+    constexpr T&& operator()(T&& value) const noexcept
+    {
+        return std::forward<T>(value);
+    }
+};
+
+/**
+ * @brief Appends all elements from a given range to an output stream,
+ *        applying a transformation to each element before insertion.
+ *
+ * @tparam Transform A callable that transforms each element into a
+ *         std::string.
+ * @tparam First The first range type.
+ * @param oss The output string stream to which elements are appended.
+ * @param separator The string to insert between elements.
+ * @param first_elem A flag indicating whether the current element is the
+ *        first in the sequence. This is updated during iteration to ensure
+ *        separators are only inserted between elements.
+ * @param range The input range whose elements will be appended.
+ * @param transform A function or lambda applied to each element before
+ *        insertion.
+ */
+template<std::ranges::range Range, typename Transform>
+    requires std::invocable<Transform, std::ranges::range_value_t<Range>>
+    && is_joinable_element<
+                 std::invoke_result_t<Transform,
+                                      std::ranges::range_value_t<Range>>>
+inline void
+append_range(std::ostringstream& oss,
+             std::string_view separator,
+             bool& first_elem,
+             const Range& range,
+             Transform&& transform)
+{
+    for (const auto& elem : range) {
+        if (!first_elem)
+            oss << separator;
+        first_elem = false;
+        append_element(oss, transform(elem));
+    }
+}
+
 /**
  * @brief Joins elements from multiple ranges into a single string using the
  * specified separator.
@@ -66,17 +113,9 @@ join(std::string_view separator, const First& first, const Rest&... rest)
     std::ostringstream oss;
     bool first_elem = true;
 
-    auto append_range = [&](const auto& range) {
-        for (const auto& elem : range) {
-            if (!first_elem)
-                oss << separator;
-            first_elem = false;
-            append_element(oss, elem);
-        }
-    };
+    append_range(oss, separator, first_elem, first, identity{});
+    (..., append_range(oss, separator, first_elem, rest, identity{}));
 
-    append_range(first);
-    ( ... , append_range(rest) );
     return oss.str();
 }
 
@@ -115,17 +154,9 @@ join(std::string_view separator,
     std::ostringstream oss;
     bool first_elem = true;
 
-    auto append_transformed = [&](const auto& range) {
-        for (const auto& elem : range) {
-            if (!first_elem)
-                oss << separator;
-            first_elem = false;
-            append_element(oss, transform(elem));
-        }
-    };
+    append_range(oss, separator, first_elem, first, transform);
+    (..., append_range(oss, separator, first_elem, rest, transform));
 
-    append_transformed(first);
-    ( ... , append_transformed(rest) );
     return oss.str();
 }
 
